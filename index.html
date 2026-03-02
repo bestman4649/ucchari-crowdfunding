@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>うっちゃり — Campfire クラウドファンディング（市場証明）</title>
+    <meta name="description" content="うっちゃりプロジェクトの市場証明。Campfireクラウドファンディングで「支援額＝熱量」を可視化する。">
+    <link href="https://fonts.googleapis.com/css2?family=Yomogi&amp;family=Zen+Kurenaido&amp;family=Klee+One:wght@400;600&amp;family=Reggae+One&amp;display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --chalk-bg: #2F4F4F;
+            --chalk-bg-dark: #263E3E;
+            --chalk-bg-light: #3A5E5E;
+            --chalk-white: #FFFFFF;
+            --chalk-white-soft: rgba(255, 255, 255, 0.85);
+            --chalk-faded: rgba(255, 255, 255, 0.45);
+            --chalk-ghost: rgba(255, 255, 255, 0.15);
+            --accent-red: #FF6347;
+            --accent-yellow: #FFD700;
+            --accent-green: #90EE90;
+            --accent-blue: #87CEEB;
+            --accent-pink: #FFB6C1;
+        }
+
+        body {
+            font-family: 'Klee One', 'Yomogi', cursive, sans-serif;
+            background-color: var(--chalk-bg);
+            color: var(--chalk-white);
+            line-height: 2;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 0, 0, 0.02) 2px, rgba(0, 0, 0, 0.02) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 15% 20%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 85% 40%, rgba(255, 255, 255, 0.03) 0%, transparent 40%),
+                radial-gradient(ellipse at 40% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 45%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== ヒーロー ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            padding: 3rem 2rem;
+        }
+
+        .hero-deco {
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            color: var(--chalk-faded);
+            margin: 1rem 0;
+        }
+
+        .hero h1 {
+            font-family: 'Reggae One', cursive;
+            font-size: clamp(2rem, 6vw, 4rem);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 255, 255, 0.1);
+            letter-spacing: 0.08em;
+            margin-bottom: 0.5rem;
+            transform: rotate(-1deg);
+        }
+
+        .hero-subtitle {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: clamp(1rem, 2.5vw, 1.4rem);
+            color: var(--accent-yellow);
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+            margin-bottom: 1rem;
+            transform: rotate(0.5deg);
+        }
+
+        .hero-tagline {
+            font-size: 1.05rem;
+            color: var(--chalk-white-soft);
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 2.2;
+        }
+
+        .hero-amount {
+            margin-top: 2.5rem;
+            padding: 1.5rem 2.5rem;
+            border: 2px dashed var(--accent-yellow);
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .hero-amount::before {
+            content: '★ TARGET ★';
+            position: absolute;
+            top: -0.8rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--chalk-bg);
+            padding: 0 1rem;
+            font-size: 0.75rem;
+            letter-spacing: 3px;
+            color: var(--accent-yellow);
+        }
+
+        .amount-num {
+            font-family: 'Reggae One', cursive;
+            font-size: 3rem;
+            color: var(--accent-red);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .amount-label {
+            font-size: 0.85rem;
+            color: var(--chalk-faded);
+        }
+
+        .scroll-hint {
+            margin-top: 3rem;
+            color: var(--chalk-faded);
+            font-size: 0.9rem;
+            animation: hint-bounce 2s infinite;
+        }
+
+        @keyframes hint-bounce {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(8px)
+            }
+        }
+
+        /* ===== 共通 ===== */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 4rem 2rem;
+        }
+
+        .section-inner {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .chalk-divider {
+            text-align: center;
+            margin: 1rem 0 2rem;
+            color: var(--chalk-ghost);
+            font-size: 1.2rem;
+            letter-spacing: 0.3rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border: 1px dashed var(--accent-yellow);
+            color: var(--accent-yellow);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            margin-bottom: 0.8rem;
+            transform: rotate(-1deg);
+        }
+
+        .section h2 {
+            font-family: 'Reggae One', cursive;
+            font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+            transform: rotate(-0.5deg);
+        }
+
+        .section-desc {
+            color: var(--chalk-white-soft);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        /* カード */
+        .card {
+            border: 1.5px solid var(--chalk-ghost);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            border-color: var(--chalk-white-soft);
+            transform: translateY(-3px) rotate(-0.3deg);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-yellow));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card h3 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 1.1rem;
+            color: var(--accent-yellow);
+            margin-bottom: 0.8rem;
+        }
+
+        .card ul {
+            list-style: none;
+        }
+
+        .card li {
+            font-size: 0.9rem;
+            color: var(--chalk-white-soft);
+            padding: 0.3rem 0 0.3rem 1.3rem;
+            position: relative;
+        }
+
+        .card li::before {
+            content: '○';
+            position: absolute;
+            left: 0;
+            color: var(--chalk-faded);
+            font-size: 0.7rem;
+            top: 0.45rem;
+        }
+
+        /* グリッド */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* 黄金比カード */
+        .golden-card {
+            border: 2px solid var(--accent-yellow);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 2rem;
+            background: rgba(255, 215, 0, 0.03);
+        }
+
+        .golden-card .formula {
+            font-family: 'Klee One', cursive;
+            font-size: 1rem;
+            color: var(--chalk-white-soft);
+            line-height: 2.2;
+        }
+
+        .golden-card .formula .highlight {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .golden-card .formula .this {
+            color: var(--accent-yellow);
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        /* テーブル */
+        .chalk-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .chalk-table th,
+        .chalk-table td {
+            padding: 0.7rem 1rem;
+            text-align: left;
+            border-bottom: 1px dashed var(--chalk-ghost);
+        }
+
+        .chalk-table th {
+            color: var(--accent-yellow);
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-weight: normal;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .chalk-table td {
+            color: var(--chalk-white-soft);
+            font-size: 0.9rem;
+        }
+
+        .chalk-table tr:last-child td {
+            border-bottom: none;
+            font-weight: bold;
+        }
+
+        /* 目標テーブル */
+        .target-table {
+            margin-top: 2rem;
+        }
+
+        .target-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-bottom: 1px dashed var(--chalk-ghost);
+        }
+
+        .target-row.main {
+            border: 2px solid var(--accent-yellow);
+            border-radius: 10px;
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .target-amount {
+            font-family: 'Reggae One', cursive;
+            font-size: 1.5rem;
+            color: var(--accent-red);
+            min-width: 120px;
+        }
+
+        .target-row.main .target-amount {
+            font-size: 1.8rem;
+        }
+
+        .target-meaning {
+            color: var(--chalk-white-soft);
+            font-size: 0.9rem;
+        }
+
+        /* 循環モデル */
+        .cycle-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .cycle-item {
+            padding: 0.5rem 1rem;
+            border: 1px dashed var(--chalk-faded);
+            border-radius: 8px;
+            color: var(--chalk-white-soft);
+        }
+
+        .cycle-item.start {
+            border-color: var(--accent-yellow);
+            color: var(--accent-yellow);
+        }
+
+        .cycle-arrow {
+            color: var(--accent-red);
+            font-size: 1.2rem;
+        }
+
+        /* ロードマップ */
+        .roadmap {
+            margin-top: 2rem;
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .roadmap::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: repeating-linear-gradient(to bottom, var(--chalk-faded) 0px, var(--chalk-faded) 6px, transparent 6px, transparent 12px);
+        }
+
+        .rm-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 1rem;
+        }
+
+        .rm-dot {
+            position: absolute;
+            left: -2.45rem;
+            top: 0.3rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Reggae One', cursive;
+            font-size: 0.65rem;
+        }
+
+        .rm-dot.active {
+            background: var(--accent-red);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255, 99, 71, 0.4);
+        }
+
+        .rm-dot.next {
+            background: var(--accent-yellow);
+            color: #333;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .rm-dot.future {
+            border: 2px dashed var(--chalk-faded);
+            color: var(--chalk-faded);
+            background: transparent;
+        }
+
+        .rm-item h4 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 1.05rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .rm-item.active h4 {
+            color: var(--accent-red);
+        }
+
+        .rm-item.next h4 {
+            color: var(--accent-yellow);
+        }
+
+        .rm-item.future h4 {
+            color: var(--chalk-white-soft);
+        }
+
+        .rm-item p {
+            font-size: 0.85rem;
+            color: var(--chalk-faded);
+        }
+
+        .now-tag {
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            background: var(--accent-red);
+            color: #fff;
+            font-size: 0.65rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+        }
+
+        .next-tag {
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            background: var(--accent-yellow);
+            color: #333;
+            font-size: 0.65rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+        }
+
+        /* 連携 */
+        .link-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .link-box {
+            border: 1.5px dashed var(--chalk-ghost);
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .link-box:hover {
+            border-color: var(--accent-yellow);
+            transform: translateX(5px);
+        }
+
+        .link-box .arrow {
+            color: var(--accent-red);
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: 0.2rem;
+        }
+
+        .link-box h4 {
+            font-family: 'Zen Kurenaido', sans-serif;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+            color: var(--accent-yellow);
+        }
+
+        .link-box p {
+            font-size: 0.8rem;
+            color: var(--chalk-faded);
+        }
+
+        /* 注意書き */
+        .note {
+            margin-top: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-left: 3px solid var(--accent-yellow);
+            color: var(--chalk-faded);
+            font-size: 0.85rem;
+        }
+
+        /* フッター */
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-line {
+            color: var(--chalk-ghost);
+            margin-bottom: 1rem;
+            letter-spacing: 0.5rem;
+        }
+
+        .footer p {
+            font-family: 'Klee One', cursive;
+            color: var(--chalk-faded);
+            font-size: 0.85rem;
+        }
+
+        .footer .brand {
+            font-family: 'Reggae One', cursive;
+            font-size: 1.2rem;
+            color: var(--chalk-white-soft);
+            margin-bottom: 0.3rem;
+        }
+
+        /* アニメーション */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .underline-chalk {
+            position: relative;
+            display: inline-block;
+        }
+
+        .underline-chalk::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: -5%;
+            width: 110%;
+            height: 3px;
+            background: var(--accent-yellow);
+            opacity: 0.6;
+            border-radius: 2px;
+            transform: rotate(-0.5deg);
+        }
+
+        @media (max-width: 768px) {
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .target-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .cycle-flow {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body class="">
+
+    <!-- ヒーロー -->
+    <section class="hero">
+        <div class="hero-deco">✦ ✦ ✦ ✦ ✦</div>
+        <h1>Campfire<br>クラウドファンディング</h1>
+        <p class="hero-subtitle">市場証明（Proof of Market）</p>
+        <p class="hero-tagline">
+            「うっちゃり」プロジェクトの市場証明として、<br>
+            Campfireでクラウドファンディングを実施。<br>
+            <span class="underline-chalk">支援額 ＝ 熱量</span>。市場の需要を可視化する。
+        </p>
+        <div class="hero-amount">
+            <div class="amount-num">150万円↑</div>
+            <div class="amount-label">目標金額（Proof of Market ライン）</div>
+        </div>
+        <div class="hero-deco">✦ ✦ ✦ ✦ ✦</div>
+        <div class="scroll-hint">↓ スクロールして詳細を見る ↓</div>
+    </section>
+
+    <!-- 核心 -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">🔑 核心</span>
+            <h2>「支援額 ＝ 熱量」</h2>
+            <p class="section-desc">資金を集めるだけでなく、「市場の需要」を可視化するプロセス。支援額がそのまま市場の熱量の証明になる。</p>
+            <div class="target-table">
+                <div class="target-row">
+                    <div class="target-amount">50万円</div>
+                    <div class="target-meaning">Validation（最低限の市場検証）</div>
+                </div>
+                <div class="target-row main">
+                    <div class="target-amount">150万円↑</div>
+                    <div class="target-meaning"><strong>← Proof of Market（市場証明）目標ライン</strong></div>
+                </div>
+            </div>
+            <div class="note">⚠️ Campfire手数料（17%）を考慮：150万円を手取りするには約180万円が必要</div>
+        </div>
+    </section>
+
+    <!-- 黄金比 -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">🏆 成功の黄金比</span>
+            <h2>3つの証明</h2>
+            <div class="golden-card">
+                <div class="formula">
+                    <span class="this">Ⓐ クラファン成功（市場証明）← ここが担当</span><br>
+                    <span class="highlight">Ⓑ 地域公式連携（社会証明）</span><br>
+                    <span class="highlight">Ⓒ AI制作技術（再現性）</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 準備チェックリスト -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">📋 準備</span>
+            <h2>Campfire プロジェクト準備</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-icon">📋</div>
+                    <h3>基本情報</h3>
+                    <ul>
+                        <li>プロジェクトタイトル決定</li>
+                        <li>カテゴリ: アニメーション / 地域活性化</li>
+                        <li>目標金額: 150万円以上（手数料込約180万円）</li>
+                        <li>募集期間: 30〜60日</li>
+                        <li>メインビジュアル作成</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📝</div>
+                    <h3>プロジェクトページ</h3>
+                    <ul>
+                        <li>キャッチコピー</li>
+                        <li>「うっちゃり」とは？— AI×地域×アニメの新モデル</li>
+                        <li>なぜ福島町なのか？— 地域の文化資源</li>
+                        <li>従来モデルとの違い — 少人数＋AI、コスト1/3</li>
+                        <li>「消費で終わらせない、投資への転換」のビジョン</li>
+                        <li>資金の使い道 / スケジュール / リスク＆チャレンジ</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🎁</div>
+                    <h3>リターン設計</h3>
+                    <ul>
+                        <li>応援プラン（お礼メッセージ、活動報告）</li>
+                        <li>中間プラン（クレジット掲載、限定グッズ）</li>
+                        <li>高額プラン（スペシャル特典、聖地巡礼ツアー）</li>
+                        <li>各リターンの金額設定</li>
+                        <li>発送時期</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📣</div>
+                    <h3>プロモーション計画</h3>
+                    <ul>
+                        <li>ティザー告知（X, Instagram, YouTube）</li>
+                        <li>プレスリリース</li>
+                        <li>インフルエンサーへのアプローチ</li>
+                        <li>開始日の広報戦略</li>
+                        <li>中間報告・ラストスパート施策</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 資金計画 -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">💰 資金計画</span>
+            <h2>資金の使い道</h2>
+            <div class="card" style="overflow-x: auto;">
+                <table class="chalk-table">
+                    <thead>
+                        <tr>
+                            <th>項目</th>
+                            <th>金額（概算）</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>5分パイロット版制作費</td>
+                            <td>―</td>
+                        </tr>
+                        <tr>
+                            <td>上映会開催費</td>
+                            <td>―</td>
+                        </tr>
+                        <tr>
+                            <td>グッズ・リターン制作費</td>
+                            <td>―</td>
+                        </tr>
+                        <tr>
+                            <td>プロモーション費</td>
+                            <td>―</td>
+                        </tr>
+                        <tr>
+                            <td>Campfire手数料（17%）</td>
+                            <td>―</td>
+                        </tr>
+                        <tr>
+                            <td>合計目標</td>
+                            <td style="color: var(--accent-red); font-family: 'Reggae One', cursive;">150万円以上</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campfire手続き -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">⚙️ 手続き</span>
+            <h2>Campfire 手続き</h2>
+            <div class="card">
+                <ul>
+                    <li>アカウント作成 / ログイン（camp-fire.jp）</li>
+                    <li>本人確認書類の提出</li>
+                    <li>銀行口座情報の登録</li>
+                    <li>プロジェクト審査申請（最短即日〜5日）</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 循環モデル -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">🔄 循環</span>
+            <h2>お金と価値の循環モデル</h2>
+            <p class="section-desc">消費で終わらせない、投資への転換. クラファンはこの循環の起点となる。</p>
+            <div class="cycle-flow">
+                <div class="cycle-item">地域文化資源</div>
+                <div class="cycle-arrow">→</div>
+                <div class="cycle-item">IP化</div>
+                <div class="cycle-arrow">→</div>
+                <div class="cycle-item start">クラファン・上映</div>
+                <div class="cycle-arrow">→</div>
+                <div class="cycle-item">資金循環</div>
+                <div class="cycle-arrow">→</div>
+                <div class="cycle-item">次作品制作</div>
+                <div class="cycle-arrow">→</div>
+                <div class="cycle-item">人材育成</div>
+                <div class="cycle-arrow">→</div>
+                <div class="cycle-item">地域ブランド強化</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ロードマップ -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">🗺️ ロードマップ</span>
+            <h2>文明実装ロードマップ</h2>
+            <div class="roadmap">
+                <div class="rm-item active">
+                    <div class="rm-dot active">P1</div>
+                    <h4>証明（Proof）<span class="now-tag">← 現在</span></h4>
+                    <p>クラファン企画・ページ準備</p>
+                </div>
+                <div class="rm-item next">
+                    <div class="rm-dot next">P2</div>
+                    <h4>社会実装（Implementation）<span class="next-tag">← 次</span></h4>
+                    <p>クラファン実施・目標達成</p>
+                </div>
+                <div class="rm-item future">
+                    <div class="rm-dot future">P3</div>
+                    <h4>モデル化（Modeling）</h4>
+                    <p>成功事例としてパッケージ化</p>
+                </div>
+                <div class="rm-item future">
+                    <div class="rm-dot future">P4</div>
+                    <h4>波及展開（Expansion）</h4>
+                    <p>他地域でのクラファンモデル展開</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 連携 -->
+    <section class="section">
+        <div class="section-inner fade-up">
+            <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+            <span class="section-tag">🔗 連携</span>
+            <h2>他ワークスペースとの連携</h2>
+            <div class="link-boxes">
+                <div class="link-box">
+                    <div class="arrow">←</div>
+                    <div>
+                        <h4>会話A（AI技術開発）</h4>
+                        <p>AI制作のサンプル映像をプロモに活用</p>
+                    </div>
+                </div>
+                <div class="link-box">
+                    <div class="arrow">↔</div>
+                    <div>
+                        <h4>会話C（福島町 地域連携）</h4>
+                        <p>福島町の公式連携をクラファンの信頼性担保に</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="footer-line">─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
+        <p class="brand">うっちゃり</p>
+        <p>支援額 ＝ 熱量。市場が、あなたの「好き」で動き出す。</p>
+        <div style="margin-top: 1rem; color: var(--chalk-ghost);">✦ ✦ ✦</div>
+    </footer>
+
+    <script>
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+    </script>
+</body></html>
