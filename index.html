@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="ja"><head>
+<html lang="ja">
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>うっちゃり — Campfire クラウドファンディング（市場証明）</title>
     <meta name="description" content="うっちゃりプロジェクトの市場証明。Campfireクラウドファンディングで「支援額＝熱量」を可視化する。">
-    <link href="https://fonts.googleapis.com/css2?family=Yomogi&amp;family=Zen+Kurenaido&amp;family=Klee+One:wght@400;600&amp;family=Reggae+One&amp;display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Yomogi&family=Zen+Kurenaido&family=Klee+One:wght@400;600&family=Reggae+One&display=swap"
+        rel="stylesheet">
     <style>
         *,
         *::before,
@@ -633,10 +637,67 @@
                 flex-direction: column;
             }
         }
+
+        /* ===== ナビバー ===== */
+        .site-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(38, 62, 62, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--chalk-ghost);
+            padding: 0.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .site-nav a {
+            color: var(--chalk-faded);
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-family: 'Klee One', cursive;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .site-nav a:hover {
+            color: var(--chalk-white);
+            background: var(--chalk-ghost);
+        }
+
+        .site-nav a.active {
+            color: var(--accent-yellow);
+            border-bottom: 2px solid var(--accent-yellow);
+        }
+
+        .site-nav .nav-brand {
+            font-family: 'Reggae One', cursive;
+            font-size: 0.85rem;
+            color: var(--chalk-white-soft);
+            margin-right: 1rem;
+        }
+
+        body {
+            padding-top: 2.5rem;
+        }
     </style>
 </head>
 
-<body class="">
+<body>
+
+    <nav class="site-nav">
+        <a href="https://bestman4649.github.io/ucchari-portal/" class="nav-brand">🏠 うっちゃり</a>
+        <a href="https://bestman4649.github.io/ucchari-tech-dev/">🤖 AI技術開発</a>
+        <a href="https://bestman4649.github.io/ucchari-crowdfunding/" class="active">🔥 クラファン</a>
+        <a href="https://bestman4649.github.io/ucchari-fukushima-collab/">🤝 福島町連携</a>
+    </nav>
 
     <!-- ヒーロー -->
     <section class="hero">
@@ -817,7 +878,7 @@
             <div class="chalk-divider">─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
             <span class="section-tag">🔄 循環</span>
             <h2>お金と価値の循環モデル</h2>
-            <p class="section-desc">消費で終わらせない、投資への転換. クラファンはこの循環の起点となる。</p>
+            <p class="section-desc">消費で終わらせない、投資への転換。クラファンはこの循環の起点となる。</p>
             <div class="cycle-flow">
                 <div class="cycle-item">地域文化資源</div>
                 <div class="cycle-arrow">→</div>
@@ -897,6 +958,17 @@
         <div class="footer-line">─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─</div>
         <p class="brand">うっちゃり</p>
         <p>支援額 ＝ 熱量。市場が、あなたの「好き」で動き出す。</p>
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+            <a href="https://bestman4649.github.io/ucchari-portal/"
+                style="color: var(--chalk-faded); text-decoration: none; font-size: 0.8rem; transition: color 0.3s;">🏠
+                ポータル</a>
+            <a href="https://bestman4649.github.io/ucchari-tech-dev/"
+                style="color: var(--chalk-faded); text-decoration: none; font-size: 0.8rem; transition: color 0.3s;">🤖
+                AI技術開発</a>
+            <a href="https://bestman4649.github.io/ucchari-fukushima-collab/"
+                style="color: var(--chalk-faded); text-decoration: none; font-size: 0.8rem; transition: color 0.3s;">🤝
+                福島町連携</a>
+        </div>
         <div style="margin-top: 1rem; color: var(--chalk-ghost);">✦ ✦ ✦</div>
     </footer>
 
@@ -906,4 +978,6 @@
         }, { threshold: 0.1 });
         document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
     </script>
-</body></html>
+</body>
+
+</html>
